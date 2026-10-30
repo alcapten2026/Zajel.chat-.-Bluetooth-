@@ -1,1 +1,46 @@
 
+
+name: ZajilChat APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  extract-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Repository
+        uses: actions/checkout@v4
+
+      - name: Extract Source ZIP
+        run: |
+          mkdir -p extracted output
+          ZIP=$(find . -type f -iname "ZajilChat-Android-Source.zip" | head -n 1)
+
+          if [ -z "$ZIP" ]; then
+            echo "ZIP file not found"
+            exit 1
+          fi
+
+          unzip -o "$ZIP" -d extracted
+
+      - name: Find APK
+        run: |
+          APK=$(find extracted -type f -iname "*.apk" | head -n 1)
+
+          if [ -z "$APK" ]; then
+            echo "No APK found inside ZIP"
+            exit 1
+          fi
+
+          cp "$APK" output/ZajilChat.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZajilChat-APK
+          path: output/ZajilChat.apk
